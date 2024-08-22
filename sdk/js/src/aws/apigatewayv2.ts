@@ -1,12 +1,12 @@
 import {
-  APIGatewayRequestAuthorizerEvent,
-  APIGatewayAuthorizerResult,
-  APIGatewayRequestAuthorizerHandler,
+  APIGatewayRequestAuthorizerEventV2,
+  APIGatewayRequestIAMAuthorizerHandlerV2,
+  APIGatewayIAMAuthorizerResult,
   Context,
 } from "aws-lambda";
 
 export module apigatewayv2 {
-  export interface AuthResult extends Partial<APIGatewayAuthorizerResult> {
+  export interface AuthResult extends Partial<APIGatewayIAMAuthorizerResult> {
     /**
      * Whether the request was successfully authorized.
      */
@@ -34,10 +34,10 @@ export module apigatewayv2 {
    */
   export function authorizer(
     input: (
-      event: APIGatewayRequestAuthorizerEvent,
+      event: APIGatewayRequestAuthorizerEventV2,
       context: Context
     ) => Promise<AuthResult>
-  ): APIGatewayRequestAuthorizerHandler {
+  ): APIGatewayRequestIAMAuthorizerHandlerV2 {
     return async (event, ctx) => {
       const {
         authorized,
@@ -57,7 +57,7 @@ export module apigatewayv2 {
               {
                 Action: "execute-api:Invoke",
                 Effect: "Deny",
-                Resource: event.methodArn,
+                Resource: event.routeArn,
               },
               ...(policyDocument?.Statement ?? []),
             ],
@@ -76,7 +76,7 @@ export module apigatewayv2 {
             {
               Action: "execute-api:Invoke",
               Effect: "Allow",
-              Resource: event.methodArn,
+              Resource: event.routeArn,
             },
             ...(policyDocument?.Statement ?? []),
           ],

@@ -103,6 +103,7 @@ export class ApiGatewayV2Authorizer extends Component {
                 }))
               : undefined,
             authorizerUri: fn?.nodes.function.invokeArn,
+            authorizerPayloadFormatVersion: "2.0",
           },
           { parent: self },
         ),

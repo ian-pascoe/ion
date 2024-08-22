@@ -164,6 +164,16 @@ export class ApiGatewayV1Authorizer extends Component {
           );
         return self.fn;
       },
+      /**
+       * The IAM authorization permission.
+       */
+      get permission() {
+        if (!self.permission)
+          throw new VisibleError(
+            "Cannot access `nodes.permission` because the data source does not use a Lambda function.",
+          );
+        return self.permission;
+      },
     };
   }
 }

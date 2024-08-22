@@ -1,21 +1,26 @@
-import { ComponentResourceOptions, Input, output } from "@pulumi/pulumi";
+import {
+  ComponentResourceOptions,
+  Input,
+  interpolate,
+  Output,
+  output,
+  UnwrappedObject,
+} from "@pulumi/pulumi";
 import { Component, transform } from "../component";
 import { ApiGatewayV2AuthorizerArgs } from "./apigatewayv2";
-import { apigatewayv2 } from "@pulumi/aws";
+import { apigatewayv2, lambda } from "@pulumi/aws";
+import { Function, FunctionArgs } from "./function";
+import { VisibleError } from "../error";
+import { Api } from "@pulumi/aws/apigatewayv2";
 
 export interface AuthorizerArgs extends ApiGatewayV2AuthorizerArgs {
   /**
    * The API Gateway to use for the route.
    */
   api: Input<{
-    /**
-     * The name of the API Gateway.
-     */
-    name: Input<string>;
-    /**
-     * The ID of the API Gateway.
-     */
     id: Input<string>;
+    name: Input<string>;
+    executionArn: Input<string>;
   }>;
 }
 
@@ -31,6 +36,8 @@ export interface AuthorizerArgs extends ApiGatewayV2AuthorizerArgs {
  */
 export class ApiGatewayV2Authorizer extends Component {
   private readonly authorizer: apigatewayv2.Authorizer;
+  private readonly function?: Output<Function>;
+  private readonly permission?: lambda.Permission;
 
   constructor(
     name: string,
@@ -42,11 +49,39 @@ export class ApiGatewayV2Authorizer extends Component {
     const self = this;
 
     const api = output(args.api);
-    const jwt = output(args.jwt);
 
+    validateSingleAuthorizer();
+    const type = getType();
+
+    const fn = createFunction();
     const authorizer = createAuthorizer();
+    const permission = createPermission();
 
+    this.function = fn;
+    this.permission = permission;
     this.authorizer = authorizer;
+
+    function validateSingleAuthorizer() {
+      const authorizers = [args.lambda, args.jwt].filter((e) => e);
+      if (authorizers.length === 0)
+        throw new VisibleError(
+          `Please provide one of "lambda" or "jwt" for the ${args.name} authorizer.`,
+        );
+
+      if (authorizers.length > 1) {
+        throw new VisibleError(
+          `Please provide only one of "lambda" or "jwt" for the ${args.name} authorizer.`,
+        );
+      }
+    }
+
+    function getType() {
+      if (args.jwt) return "JWT";
+      if (args.lambda) return "REQUEST";
+      throw new VisibleError(
+        `Please provide one of "lambda" or "jwt" for the ${args.name} authorizer.`,
+      );
+    }
 
     function createAuthorizer() {
       return new apigatewayv2.Authorizer(
@@ -55,19 +90,46 @@ export class ApiGatewayV2Authorizer extends Component {
           `${name}Authorizer`,
           {
             apiId: api.id,
-            authorizerType: "JWT",
-            identitySources: [
-              jwt.apply(
-                (jwt) => jwt.identitySource ?? "$request.header.Authorization",
-              ),
-            ],
-            jwtConfiguration: jwt.apply((jwt) => ({
-              audiences: jwt.audiences,
-              issuer: jwt.issuer,
-            })),
+            authorizerType: type,
+            identitySources: args.jwt
+              ? output(args.jwt).apply((jwt) => [
+                  jwt.identitySource ?? "$request.header.Authorization",
+                ])
+              : undefined,
+            jwtConfiguration: args.jwt
+              ? output(args.jwt).apply((jwt) => ({
+                  audiences: jwt.audiences,
+                  issuer: jwt.issuer,
+                }))
+              : undefined,
+            authorizerUri: fn?.nodes.function.invokeArn,
           },
           { parent: self },
         ),
+      );
+    }
+
+    function createFunction() {
+      const fn = args.lambda;
+      if (!fn) return;
+
+      return Function.fromDefinition(`${name}LambdaAuthorizerFn`, fn, {
+        description: interpolate`${api.name} authorizer function`,
+      });
+    }
+
+    function createPermission() {
+      if (!fn) return;
+
+      return new lambda.Permission(
+        `${name}Permission`,
+        {
+          action: "lambda:InvokeFunction",
+          function: fn.arn,
+          principal: "apigateway.amazonaws.com",
+          sourceArn: interpolate`${api.executionArn}/authorizers/${authorizer.id}`,
+        },
+        { parent: self },
       );
     }
   }
@@ -83,11 +145,34 @@ export class ApiGatewayV2Authorizer extends Component {
    * The underlying [resources](/docs/components/#nodes) this component creates.
    */
   public get nodes() {
+    const self = this;
     return {
       /**
        * The API Gateway V2 authorizer.
        */
       authorizer: this.authorizer,
+
+      /**
+       * The Lambda function used by the authorizer.
+       */
+      get function() {
+        if (!self.function)
+          throw new VisibleError(
+            "Cannot access `nodes.function` because the data source does not use a Lambda function.",
+          );
+        return self.function;
+      },
+
+      /**
+       * The IAM authorization permission.
+       */
+      get permission() {
+        if (!self.permission)
+          throw new VisibleError(
+            "Cannot access `nodes.permission` because the data source does not use a Lambda function.",
+          );
+        return self.permission;
+      },
     };
   }
 }

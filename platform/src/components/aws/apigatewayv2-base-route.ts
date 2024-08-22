@@ -2,6 +2,7 @@ import { Input, Output, interpolate, output } from "@pulumi/pulumi";
 import { Component, transform } from "../component";
 import { ApiGatewayV2RouteArgs } from "./apigatewayv2";
 import { apigatewayv2 } from "@pulumi/aws";
+import { ApiGatewayV2Authorizer } from "./apigatewayv2-authorizer";
 
 export interface ApiGatewayV2BaseRouteArgs extends ApiGatewayV2RouteArgs {
   /**
@@ -33,15 +34,26 @@ export function createApiRoute(
   integrationId: Output<string>,
   parent: Component,
 ) {
-  const authArgs = output(args.auth).apply((auth) => {
-    if (!auth) return { authorizationType: "NONE" };
-    if (auth.iam) return { authorizationType: "AWS_IAM" };
-    if (auth.jwt)
+  const authArgs = output(args.auth).apply((auth: any) => {
+    if (!auth) {
+      return { authorizationType: "NONE" };
+    }
+    if (auth.iam) {
+      return { authorizationType: "AWS_IAM" };
+    }
+    if (auth.jwt) {
       return {
         authorizationType: "JWT",
         authorizationScopes: auth.jwt.scopes,
         authorizerId: auth.jwt.authorizer,
       };
+    }
+    if (auth.lambda) {
+      return {
+        authorizationType: "CUSTOM",
+        authorizerId: auth.lambda.authorizer,
+      };
+    }
     return { authorizationType: "NONE" };
   });
 

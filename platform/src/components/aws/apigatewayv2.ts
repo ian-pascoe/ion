@@ -342,7 +342,7 @@ export interface ApiGatewayV2AuthorizerArgs {
    * const userPoolClient = new aws.cognito.UserPoolClient();
    * ```
    */
-  jwt: Input<{
+  jwt?: Input<{
     /**
      * Base domain of the identity provider that issues JSON Web Tokens.
      * @example
@@ -363,6 +363,18 @@ export interface ApiGatewayV2AuthorizerArgs {
      */
     identitySource?: Input<string>;
   }>;
+  /**
+   * Create a Lambda authorizer that can be used by the routes.
+   * @example
+   * ```js
+   * {
+   *   lambda: "src/authorizer.handler"
+   * }
+   * ```
+   *
+   * See the [Amazon API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) for details.
+   */
+  lambda?: Input<string | FunctionArgs>;
   /**
    * [Transform](/docs/components#transform) how this component creates its underlying
    * resources.
@@ -429,6 +441,29 @@ export interface ApiGatewayV2RouteArgs {
          */
         scopes?: Input<Input<string>[]>;
       }>;
+
+    /**
+     * Configure a custom lambda authorizer for a given API route.
+     *
+     * @example
+     * ```js
+     * {
+     *   auth: {
+     *     lambda: {
+     *       authorizer: myAuthorizer.id
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * Where `myAuthorizer` is created by calling the `addAuthorizer` method.
+     */
+    lambda?: Input<{
+      /**
+       * The ID of the authorizer.
+       */
+      authorizer: Input<string>;
+    }>;
     }
   >;
   /**
@@ -1137,7 +1172,8 @@ export class ApiGatewayV2 extends Component implements Link.Linkable {
         api: {
           id: self.api.id,
           name: selfName,
-        },
+          executionArn: self.api.executionArn,
+      },
         ...args,
       },
       { provider: this.constructorOpts.provider },

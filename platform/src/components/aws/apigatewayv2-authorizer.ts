@@ -103,7 +103,7 @@ export class ApiGatewayV2Authorizer extends Component {
                 }))
               : undefined,
             authorizerUri: fn?.nodes.function.invokeArn,
-            authorizerPayloadFormatVersion: "2.0",
+            authorizerPayloadFormatVersion: "1.0", // 1.0 is the only supported version for websockets so we'll default to that
           },
           { parent: self },
         ),

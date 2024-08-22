@@ -32,7 +32,7 @@ export interface AuthorizerArgs extends ApiGatewayV2AuthorizerArgs {
  * This component is not intended to be created directly.
  * :::
  *
- * You'll find this component returned by the `addAuthorizer` method of the `ApiGatewayV2` component.
+ * You'll find this component returned by the `addAuthorizer` method of the `ApiGatewayV2` and `ApiGatewayWebSocket` components.
  */
 export class ApiGatewayV2Authorizer extends Component {
   private readonly authorizer: apigatewayv2.Authorizer;

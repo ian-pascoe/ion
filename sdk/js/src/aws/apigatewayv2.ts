@@ -41,7 +41,7 @@ export module apigatewayv2 {
     return async (event, ctx) => {
       const {
         authorized,
-        principalId = new Date().toString(),
+        principalId = Date.now().toString(),
         context,
         usageIdentifierKey,
         policyDocument,

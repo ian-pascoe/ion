@@ -10,7 +10,7 @@ export module apigatewayv2 {
     /**
      * Whether the request was successfully authorized.
      */
-    authorized: boolean;
+    isAuthorized: boolean;
   }
 
   /**
@@ -24,7 +24,7 @@ export module apigatewayv2 {
    *   // Validate the request using event.requestContext.headers, event.multiValueHeaders, etc.
    *
    *   return {
-   *     authorized: true,
+   *     isAuthorized: true,
    *     context: {
    *       userId: "123456789012", // This can be accessed in the API route handler via event.requestContext.authorizer.userId
    *     }
@@ -40,14 +40,14 @@ export module apigatewayv2 {
   ): APIGatewayRequestIAMAuthorizerHandlerV2 {
     return async (event, ctx) => {
       const {
-        authorized,
+        isAuthorized,
         principalId = Date.now().toString(),
         context,
         usageIdentifierKey,
         policyDocument,
       } = await input(event, ctx);
 
-      if (!authorized) {
+      if (!isAuthorized) {
         return {
           principalId,
           policyDocument: {

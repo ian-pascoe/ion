@@ -34,7 +34,7 @@ export function createApiRoute(
   integrationId: Output<string>,
   parent: Component,
 ) {
-  const authArgs = output(args.auth).apply((auth: any) => {
+  const authArgs = output(args.auth).apply((auth) => {
     if (!auth) {
       return { authorizationType: "NONE" };
     }

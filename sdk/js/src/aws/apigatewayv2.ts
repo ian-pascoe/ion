@@ -50,7 +50,6 @@ export module apigatewayv2 {
       if (!authorized) {
         return {
           principalId,
-
           policyDocument: {
             Version: "2012-10-17",
             ...policyDocument,

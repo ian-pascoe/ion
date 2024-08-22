@@ -13,6 +13,22 @@ export module apigatewayv2 {
     authorized: boolean;
   }
 
+  /**
+   * Create an authorization handler for the `ApiGatewayV2` component. This can also be used for ApiGatewayWebsocket.
+   *
+   * @example
+   * ```js
+   * import { apigatewayv2 } from "sst/aws/apigatewayv2";
+   *
+   * const authorizer = apigatewayv2.authorizer(async (event, context) => {
+   *   // Validate the request using event.requestContext.headers, event.multiValueHeaders, etc.
+   *
+   *   return {
+   *     authorized: true,
+   *   };
+   * });
+   * ```
+   */
   export function authorizer(
     input: (
       event: APIGatewayRequestAuthorizerEvent,

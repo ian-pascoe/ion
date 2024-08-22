@@ -25,6 +25,9 @@ export module apigatewayv2 {
    *
    *   return {
    *     authorized: true,
+   *     context: {
+   *       userId: "123456789012", // This can be accessed in the API route handler via event.requestContext.authorizer.userId
+   *     }
    *   };
    * });
    * ```

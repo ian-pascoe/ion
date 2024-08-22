@@ -56,7 +56,7 @@ export interface Args extends ApiGatewayWebSocketRouteArgs {
 export class ApiGatewayWebSocketRoute extends Component {
   private readonly fn: Output<Function>;
   private readonly permission: lambda.Permission;
-  private readonly apiRoute: apigatewayv2.Route;
+  private readonly apiRoute: Output<apigatewayv2.Route>;
   private readonly integration: apigatewayv2.Integration;
 
   constructor(name: string, args: Args, opts?: ComponentResourceOptions) {
@@ -120,21 +120,27 @@ export class ApiGatewayWebSocketRoute extends Component {
     }
 
     function createApiRoute() {
-      return new apigatewayv2.Route(
-        ...transform(
-          args.transform?.route,
-          `${name}Route`,
-          {
-            apiId: api.id,
-            routeKey: route,
-            target: interpolate`integrations/${integration.id}`,
-            authorizationType: all([args.route, args.auth]).apply(
-              ([route, auth]) =>
-                route === "$connect" && auth?.iam ? "AWS_IAM" : "NONE",
+      return all([args.route, args.auth]).apply(
+        ([route, auth]) =>
+          new apigatewayv2.Route(
+            ...transform(
+              args.transform?.route,
+              `${name}Route`,
+              {
+                apiId: api.id,
+                routeKey: route,
+                target: interpolate`integrations/${integration.id}`,
+                authorizationType:
+                  route === "$connect" && auth?.iam
+                    ? "AWS_IAM"
+                    : auth?.lambda
+                      ? "CUSTOM"
+                      : "NONE",
+                authorizerId: auth?.lambda?.authorizer,
+              },
+              { parent: self },
             ),
-          },
-          { parent: self },
-        ),
+          ),
       );
     }
   }

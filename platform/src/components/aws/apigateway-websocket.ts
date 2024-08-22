@@ -18,6 +18,8 @@ import { ApiGatewayWebSocketRoute } from "./apigateway-websocket-route";
 import { setupApiGatewayAccount } from "./helpers/apigateway-account";
 import { apigatewayv2, cloudwatch } from "@pulumi/aws";
 import { permission } from "./permission";
+import { ApiGatewayV2AuthorizerArgs } from "./apigatewayv2";
+import { ApiGatewayV2Authorizer } from "./apigatewayv2-authorizer";
 
 export interface ApiGatewayWebSocketArgs {
   /**
@@ -127,6 +129,9 @@ export interface ApiGatewayWebSocketArgs {
   };
 }
 
+export interface ApiGatewayWebSocketAuthorizerArgs
+  extends Omit<ApiGatewayV2AuthorizerArgs, "jwt"> {}
+
 export interface ApiGatewayWebSocketRouteArgs {
   /**
    * Enable auth for your WebSocket API.
@@ -149,6 +154,15 @@ export interface ApiGatewayWebSocketRouteArgs {
      * Enable IAM authorization for a given API route. When IAM auth is enabled, clients need to use Signature Version 4 to sign their requests with their AWS credentials.
      */
     iam?: Input<true>;
+    /**
+     * Enable custom lambda authorizer for a given API route.
+     */
+    lambda?: {
+      /**
+       * The ID of the authorizer.
+       */
+      authorizer: Input<string>;
+    };
   }>;
   /**
    * [Transform](/docs/components#transform) how this component creates its underlying
@@ -551,6 +565,47 @@ export class ApiGatewayWebSocket extends Component implements Link.Linkable {
       },
       transformed[2],
     );
+  }
+
+  /**
+   * Add an authorizer to the API Gateway WebSocket API.
+   *
+   * @param args Configure the authorizer.
+   * @example
+   * Add an IAM authorizer.
+   *
+   * ```js title="sst.config.ts"
+   * api.addAuthorizer({
+   *   name: "myAuthorizer",
+   *   iam: true
+   * });
+   * ```
+   *
+   * @example
+   * Add a lambda authorizer.
+   *
+   * ```js title="sst.config.ts"
+   * api.addAuthorizer({
+   *   name: "myAuthorizer",
+   *   lambda: {
+   *     authorizer: "src/authorizer.handler"
+   *   }
+   * });
+   * ```
+   */
+  public addAuthorizer(args: ApiGatewayWebSocketAuthorizerArgs) {
+    const self = this;
+    const selfName = this.constructorName;
+    const nameSuffix = logicalName(args.name);
+
+    return new ApiGatewayV2Authorizer(`${selfName}Authorizer${nameSuffix}`, {
+      api: {
+        id: self.api.id,
+        name: selfName,
+        executionArn: self.api.executionArn,
+      },
+      ...args,
+    });
   }
 
   /** @internal */

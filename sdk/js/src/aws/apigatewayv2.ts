@@ -14,7 +14,7 @@ export module apigatewayv2 {
   }
 
   /**
-   * Create an authorization handler for the `ApiGatewayV2` component. This can also be used for ApiGatewayWebsocket.
+   * Create an authorization handler for the `ApiGatewayV2` component. This can also be used for `ApiGatewayWebSocket`.
    *
    * @example
    * ```js

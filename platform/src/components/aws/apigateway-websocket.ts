@@ -1,3 +1,4 @@
+import { apigatewayv2, cloudwatch } from "@pulumi/aws";
 import {
   ComponentResourceOptions,
   Output,
@@ -6,20 +7,19 @@ import {
   output,
 } from "@pulumi/pulumi";
 import { Component, Prettify, Transform, transform } from "../component";
-import { Link } from "../link";
 import type { Input } from "../input";
-import { FunctionArgs } from "./function";
-import { hashStringToPrettyString, physicalName, logicalName } from "../naming";
-import { DnsValidatedCertificate } from "./dns-validated-certificate";
-import { RETENTION } from "./logging";
-import { dns as awsDns } from "./dns.js";
-import { ApiGatewayV2DomainArgs } from "./helpers/apigatewayv2-domain";
+import { Link } from "../link";
+import { hashStringToPrettyString, logicalName, physicalName } from "../naming";
 import { ApiGatewayWebSocketRoute } from "./apigateway-websocket-route";
-import { setupApiGatewayAccount } from "./helpers/apigateway-account";
-import { apigatewayv2, cloudwatch } from "@pulumi/aws";
-import { permission } from "./permission";
 import { ApiGatewayV2AuthorizerArgs } from "./apigatewayv2";
 import { ApiGatewayV2Authorizer } from "./apigatewayv2-authorizer";
+import { DnsValidatedCertificate } from "./dns-validated-certificate";
+import { dns as awsDns } from "./dns.js";
+import { FunctionArgs } from "./function";
+import { setupApiGatewayAccount } from "./helpers/apigateway-account";
+import { ApiGatewayV2DomainArgs } from "./helpers/apigatewayv2-domain";
+import { RETENTION } from "./logging";
+import { permission } from "./permission";
 
 export interface ApiGatewayWebSocketArgs {
   /**

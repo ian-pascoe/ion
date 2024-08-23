@@ -1,20 +1,20 @@
+import { apigatewayv2, cloudwatch, types } from "@pulumi/aws";
 import { ComponentResourceOptions, Output, all, output } from "@pulumi/pulumi";
 import { Component, Prettify, Transform, transform } from "../component";
-import { Link } from "../link";
-import type { Input } from "../input";
-import { FunctionArgs } from "./function";
-import { hashStringToPrettyString, physicalName, logicalName } from "../naming";
-import { VisibleError } from "../error";
-import { DnsValidatedCertificate } from "./dns-validated-certificate";
-import { RETENTION } from "./logging";
-import { dns as awsDns } from "./dns";
-import { ApiGatewayV2DomainArgs } from "./helpers/apigatewayv2-domain";
-import { ApiGatewayV2LambdaRoute } from "./apigatewayv2-lambda-route";
-import { ApiGatewayV2Authorizer } from "./apigatewayv2-authorizer";
-import { apigatewayv2, cloudwatch, types } from "@pulumi/aws";
-import { ApiGatewayV2UrlRoute } from "./apigatewayv2-url-route";
 import { Duration, toSeconds } from "../duration";
+import { VisibleError } from "../error";
+import type { Input } from "../input";
+import { Link } from "../link";
+import { hashStringToPrettyString, logicalName, physicalName } from "../naming";
+import { ApiGatewayV2Authorizer } from "./apigatewayv2-authorizer";
+import { ApiGatewayV2LambdaRoute } from "./apigatewayv2-lambda-route";
 import { ApiGatewayV2PrivateRoute } from "./apigatewayv2-private-route";
+import { ApiGatewayV2UrlRoute } from "./apigatewayv2-url-route";
+import { DnsValidatedCertificate } from "./dns-validated-certificate";
+import { dns as awsDns } from "./dns";
+import { FunctionArgs } from "./function";
+import { ApiGatewayV2DomainArgs } from "./helpers/apigatewayv2-domain";
+import { RETENTION } from "./logging";
 
 interface ApiGatewayV2CorsArgs {
   /**
@@ -1173,7 +1173,7 @@ export class ApiGatewayV2 extends Component implements Link.Linkable {
           id: self.api.id,
           name: selfName,
           executionArn: self.api.executionArn,
-      },
+        },
         ...args,
       },
       { provider: this.constructorOpts.provider },

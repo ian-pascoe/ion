@@ -1,17 +1,15 @@
+import { apigatewayv2, lambda } from "@pulumi/aws";
 import {
   ComponentResourceOptions,
   Input,
   interpolate,
   Output,
   output,
-  UnwrappedObject,
 } from "@pulumi/pulumi";
 import { Component, transform } from "../component";
-import { ApiGatewayV2AuthorizerArgs } from "./apigatewayv2";
-import { apigatewayv2, lambda } from "@pulumi/aws";
-import { Function, FunctionArgs } from "./function";
 import { VisibleError } from "../error";
-import { Api } from "@pulumi/aws/apigatewayv2";
+import { ApiGatewayV2AuthorizerArgs } from "./apigatewayv2";
+import { Function } from "./function";
 
 export interface AuthorizerArgs extends ApiGatewayV2AuthorizerArgs {
   /**

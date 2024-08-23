@@ -1,3 +1,4 @@
+import { apigatewayv2, lambda } from "@pulumi/aws";
 import {
   ComponentResourceOptions,
   Input,
@@ -7,9 +8,8 @@ import {
   output,
 } from "@pulumi/pulumi";
 import { Component, Transform, transform } from "../component";
-import { Function, FunctionArgs } from "./function";
 import { ApiGatewayWebSocketRouteArgs } from "./apigateway-websocket";
-import { apigatewayv2, lambda } from "@pulumi/aws";
+import { Function, FunctionArgs } from "./function";
 
 export interface Args extends ApiGatewayWebSocketRouteArgs {
   /**

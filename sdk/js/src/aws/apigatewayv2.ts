@@ -21,7 +21,7 @@ export module apigatewayv2 {
    * import { apigatewayv2 } from "sst/aws/apigatewayv2";
    *
    * const authorizer = apigatewayv2.authorizer(async (event, context) => {
-   *   // Validate the request using event.requestContext.headers, event.multiValueHeaders, etc.
+   *   // Validate the request using event.headers, event.multiValueHeaders, etc.
    *
    *   return {
    *     isAuthorized: true,
